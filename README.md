@@ -1,2 +1,2 @@
-# Computacao grafica Trabalho2
+# Computação Gráfica Trabalho 2
  
