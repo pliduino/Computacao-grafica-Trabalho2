@@ -2,6 +2,7 @@ from MainPackage import *
 import glfw
 
 windowManager = Window.WindowManager(1280, 720, "Main")
+shader = Shader.Shader(3)
 
 windowManager.show()
 
@@ -11,7 +12,7 @@ while windowManager.loop:
     # Drawing Objects
     
 
-    windowManager.update()
+    windowManager.update(shader.get_program())
     
 
 Window.WindowManager.terminate()

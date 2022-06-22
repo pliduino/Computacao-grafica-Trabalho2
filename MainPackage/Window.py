@@ -35,7 +35,7 @@ class WindowManager:
 
         # Binding Events
         glfw.set_key_callback(self.window, self._key_event)
-        glfw.set_cursor_pos_callback(WindowManager.window, self._mouse_event)
+        glfw.set_cursor_pos_callback(self.window, self._mouse_event)
 
     def show(self):
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE);
@@ -135,4 +135,4 @@ class WindowManager:
         if self._pitch <= -90.0: 
             self._pitch = -90.0
 
-        self.camera.set_rotation(self.yaw, self.pitch)
+        self.camera.set_rotation(self._yaw, self._pitch)
