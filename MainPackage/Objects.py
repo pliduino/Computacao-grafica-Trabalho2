@@ -42,13 +42,14 @@ class MeshObject(Object):
         self.mesh['vertices'] = None
         self.mesh['texture'] = None
         self.mesh['faces'] = None
+        self.texture_id = 0
 
-    def __init__(self, filename):
-        super().__init__()
-        self.load_mesh(filename)
+        # Used for rendering at Shader
+        self.vertices_index = 0
+        self.n_vertices = 0
     
     #Loads a Wavefront OBJ file.
-    def load_mesh(self, filename):
+    def load_mesh_file(self, filename):
         vertices = []
         texture_coords = []
         faces = []
@@ -93,3 +94,6 @@ class MeshObject(Object):
         self.mesh['vertices'] = vertices
         self.mesh['texture'] = texture_coords
         self.mesh['faces'] = faces
+
+    def set_texture(self, texture_id):
+        self.texture_id = texture_id

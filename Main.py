@@ -1,12 +1,17 @@
-import MainPackage.Camera as Camera
-import MainPackage.Object as Object
-import MainPackage.Window as Window
+from MainPackage import *
 import glfw
 
-window = Window.WindowManager(1280, 720, "Main")
+windowManager = Window.WindowManager(1280, 720, "Main")
 
-window.show()
+windowManager.show()
 
-while window.loop:
+while windowManager.loop:
+    windowManager.clear()
 
-    Window.WindowManager.terminate()
+    # Drawing Objects
+    
+
+    windowManager.update()
+    
+
+Window.WindowManager.terminate()
