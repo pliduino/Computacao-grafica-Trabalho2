@@ -1,6 +1,6 @@
-import Camera
-import Object
-import Window
+import MainPackage.Camera as Camera
+import MainPackage.Object as Object
+import MainPackage.Window as Window
 import glfw
 
 window = Window.WindowManager(1280, 720, "Main")
