@@ -2,12 +2,15 @@ from OpenGL.GL import *
 from PIL import Image
 import Objects
 import numpy as np
+import glm
+import math
+
 class Shader:
-    # Used to set unique IDs to each texture
-    
 
     def __init__(self, n_textures=1):
+        # Used to set unique IDs to each texture
         self.current_texture_id = 0
+
         self.vertices_list = []    
         self.textures_coord_list = []
         
@@ -42,10 +45,12 @@ class Shader:
         self._vertex   = glCreateShader(GL_VERTEX_SHADER)
         self._fragment = glCreateShader(GL_FRAGMENT_SHADER)
     
+
         # Setting shaders source
         glShaderSource(self._vertex, vertex_code)
         glShaderSource(self._fragment, fragment_code)
     
+
         # Compiling shaders
         glCompileShader(self._vertex)
         if not glGetShaderiv(self._vertex, GL_COMPILE_STATUS):
@@ -59,8 +64,11 @@ class Shader:
             print(error)
             raise RuntimeError("Erro de compilacao do Fragment Shader")
 
+
+        # Attaching Compiled Shaders
         glAttachShader(self._program, self._vertex)
         glAttachShader(self._program, self._fragment)
+
 
         # Build program
         glLinkProgram(self._program)
@@ -68,8 +76,10 @@ class Shader:
             print(glGetProgramInfoLog(self._program))
             raise RuntimeError('Linking error')
             
+
         # Make program the default program
         glUseProgram(self._program)
+
 
         glEnable(GL_DEPTH_TEST) ### importante para 3D
         # Textures
@@ -77,7 +87,8 @@ class Shader:
         self._n_textures = n_textures
         self.textures = glGenTextures(self._n_textures)
 
-        # Request a buffer slot from GPU
+
+        # Request a buffer slot from GPU (Vertices and textures)
         self._buffer = glGenBuffers(2)
 
     def get_program(self):
@@ -127,6 +138,17 @@ class Shader:
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
     def draw_object(self, mesh_object: Objects.MeshObject):
+        position = mesh_object.get_position()
+        rotation = mesh_object.get_rotation()
+        scale =mesh_object.get_scale()
+        angle = 0.0;
+
+        mat_model = self.model(angle, rotation['x'], rotation['y'], rotation['z'], 
+                            position['x'], position['y'], position['z'], 
+                            scale['x'], scale['y'], scale['z'])
+
+        loc_model = glGetUniformLocation(self.program, "model")
+        glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)
         glBindTexture(GL_TEXTURE_2D, mesh_object.texture_id)
         glDrawArrays(GL_TRIANGLES, mesh_object.vertices_index, mesh_object.n_vertices)
 
@@ -142,3 +164,23 @@ class Shader:
 
         #TODO Change n_vertices to be set in load_mesh_file()
         mesh_object.n_vertices = len(self.vertices_list) - mesh_object.vertices_index
+
+    def model(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
+    
+        angle = math.radians(angle)
+
+        matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
+
+
+        # aplicando translacao
+        matrix_transform = glm.translate(matrix_transform, glm.vec3(t_x, t_y, t_z))    
+
+        # aplicando rotacao
+        matrix_transform = glm.rotate(matrix_transform, angle, glm.vec3(r_x, r_y, r_z))
+
+        # aplicando escala
+        matrix_transform = glm.scale(matrix_transform, glm.vec3(s_x, s_y, s_z))
+
+        matrix_transform = np.array(matrix_transform)
+
+        return matrix_transform
