@@ -1,6 +1,13 @@
+import string
 import glfw
 
 class Object:
+
+    def __str__(self):
+        string_ = "Position: " + self._position.__str__()
+        string_ += "\nRotation: " + self._rotation.__str__()
+        string_ += "\nScale: " + self._scale.__str__()
+        return string_
 
     def __init__(self, px=0, py=0, pz=0, rx=0, ry=0, rz=0, sx=1, sy=1, sz=1):
         self._position = {'x': px, 'y': py,'z': pz}
@@ -37,11 +44,17 @@ class Object:
 
 class MeshObject(Object):
 
+    def __str__(self):
+        string_ = super().__str__()
+        string_ += "\n\nMesh: " + self.mesh.__str__()
+        string_ += "\n\nTexture ID: " + self.texture_id.__str__()
+        string_ += "\nVertice Index: " + self.vertices_index.__str__()
+        string_ += "\nVertices: " + self.n_vertices.__str__()
+        return string_
+
     def __init__(self):
         super().__init__()
-        self.mesh['vertices'] = None
-        self.mesh['texture'] = None
-        self.mesh['faces'] = None
+        self.mesh = {'vertices': None, 'texture': None, 'faces': None}
         self.texture_id = 0
 
         # Used for rendering at Shader
@@ -67,6 +80,7 @@ class MeshObject(Object):
             ### recuperando vertices
             if values[0] == 'v':
                 vertices.append(values[1:4])
+                self.n_vertices += 1
 
 
             ### recuperando coordenadas de textura
