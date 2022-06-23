@@ -42,6 +42,10 @@ class Object:
         return self._scale
 
 
+    def rotate(self, x, y, z):
+        cur = self.get_rotation()
+        self.set_rotation(cur['x'] + x, cur['y'] + y, cur['z'] + z)
+
 class MeshObject(Object):
 
     def __str__(self):
@@ -80,7 +84,6 @@ class MeshObject(Object):
             ### recuperando vertices
             if values[0] == 'v':
                 vertices.append(values[1:4])
-                self.n_vertices += 1
 
 
             ### recuperando coordenadas de textura

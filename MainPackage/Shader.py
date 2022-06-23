@@ -141,9 +141,8 @@ class Shader:
         position = mesh_object.get_position()
         rotation = mesh_object.get_rotation()
         scale = mesh_object.get_scale()
-        angle = 0.0
 
-        mat_model = Shader._model(angle, rotation['x'], rotation['y'], rotation['z'], 
+        mat_model = Shader._model(rotation['x'], rotation['y'], rotation['z'], 
                             position['x'], position['y'], position['z'], 
                             scale['x'], scale['y'], scale['z'])
 
@@ -162,9 +161,14 @@ class Shader:
             for texture_id in face[1]:
                 self._textures_coord_list.append( mesh_object.mesh['texture'][texture_id-1] )
 
-    def _model(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
+        #TODO Change n_vertices to be set in load_mesh_file()
+        mesh_object.n_vertices = len(self._vertices_list) - mesh_object.vertices_index
+
+    def _model(r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     
-        angle = math.radians(angle)
+        r_x = math.radians(r_x)
+        r_y = math.radians(r_y)
+        r_z = math.radians(r_z)
 
         matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
 
@@ -173,7 +177,9 @@ class Shader:
         matrix_transform = glm.translate(matrix_transform, glm.vec3(t_x, t_y, t_z))    
 
         # aplicando rotacao
-        matrix_transform = glm.rotate(matrix_transform, angle, glm.vec3(r_x, r_y, r_z))
+        matrix_transform = glm.rotate(matrix_transform, r_x, glm.vec3(1, 0, 0))
+        matrix_transform = glm.rotate(matrix_transform, r_y, glm.vec3(0, 1, 0))
+        matrix_transform = glm.rotate(matrix_transform, r_z, glm.vec3(0, 0, 1))
 
         # aplicando escala
         matrix_transform = glm.scale(matrix_transform, glm.vec3(s_x, s_y, s_z))
