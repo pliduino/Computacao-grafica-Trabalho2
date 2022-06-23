@@ -9,10 +9,10 @@ class Shader:
 
     def __init__(self, n_textures=1):
         # Used to set unique IDs to each texture
-        self.current_texture_id = 0
+        self._current_texture_id = 0
 
-        self.vertices_list = []    
-        self.textures_coord_list = []
+        self._vertices_list = []    
+        self._textures_coord_list = []
         
         vertex_code = """
         attribute vec3 position;
@@ -95,7 +95,7 @@ class Shader:
         return self._program
     
     def load_texture(self, filename):
-        glBindTexture(GL_TEXTURE_2D, self.current_texture_id)
+        glBindTexture(GL_TEXTURE_2D, self._current_texture_id)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
@@ -108,13 +108,13 @@ class Shader:
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data)
 
-        self.current_texture_id += 1
-        return self.current_texture_id - 1
+        self._current_texture_id += 1
+        return self._current_texture_id - 1
     
     def upload_binded_meshes(self):
         #Uploading Vertices
-        vertices = np.zeros(len(self.vertices_list), [("position", np.float32, 3)])
-        vertices['position'] = self.vertices_list
+        vertices = np.zeros(len(self._vertices_list), [("position", np.float32, 3)])
+        vertices['position'] = self._vertices_list
 
         glBindBuffer(GL_ARRAY_BUFFER, self._buffer[0])
         glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
@@ -126,7 +126,7 @@ class Shader:
         
 
         # Uploading Textures
-        textures = np.zeros(len(self.textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas
+        textures = np.zeros(len(self._textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas
         textures['position'] = self._textures_coord_list
         
         glBindBuffer(GL_ARRAY_BUFFER, self._buffer[1])
@@ -140,34 +140,35 @@ class Shader:
     def draw_object(self, mesh_object: Objects.MeshObject):
         position = mesh_object.get_position()
         rotation = mesh_object.get_rotation()
-        scale =mesh_object.get_scale()
-        angle = 0.0;
+        scale = mesh_object.get_scale()
 
-        mat_model = self.model(angle, rotation['x'], rotation['y'], rotation['z'], 
+        mat_model = Shader._model(rotation['x'], rotation['y'], rotation['z'], 
                             position['x'], position['y'], position['z'], 
                             scale['x'], scale['y'], scale['z'])
 
-        loc_model = glGetUniformLocation(self.program, "model")
+        loc_model = glGetUniformLocation(self._program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)
         glBindTexture(GL_TEXTURE_2D, mesh_object.texture_id)
         glDrawArrays(GL_TRIANGLES, mesh_object.vertices_index, mesh_object.n_vertices)
 
     # Loads Object into Shader
     def bind_mesh(self, mesh_object: Objects.MeshObject):
-        mesh_object.vertices_index = len(self.vertices_list)
+        mesh_object.vertices_index = len(self._vertices_list)
 
         for face in mesh_object.mesh['faces']:
             for vertice_id in face[0]:
-                self.vertices_list.append( mesh_object.mesh['vertices'][vertice_id-1] )
+                self._vertices_list.append( mesh_object.mesh['vertices'][vertice_id-1] )
             for texture_id in face[1]:
-                self.textures_coord_list.append( mesh_object.mesh['texture'][texture_id-1] )
+                self._textures_coord_list.append( mesh_object.mesh['texture'][texture_id-1] )
 
         #TODO Change n_vertices to be set in load_mesh_file()
-        mesh_object.n_vertices = len(self.vertices_list) - mesh_object.vertices_index
+        mesh_object.n_vertices = len(self._vertices_list) - mesh_object.vertices_index
 
-    def model(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
+    def _model(r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     
-        angle = math.radians(angle)
+        r_x = math.radians(r_x)
+        r_y = math.radians(r_y)
+        r_z = math.radians(r_z)
 
         matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
 
@@ -176,7 +177,9 @@ class Shader:
         matrix_transform = glm.translate(matrix_transform, glm.vec3(t_x, t_y, t_z))    
 
         # aplicando rotacao
-        matrix_transform = glm.rotate(matrix_transform, angle, glm.vec3(r_x, r_y, r_z))
+        matrix_transform = glm.rotate(matrix_transform, r_x, glm.vec3(1, 0, 0))
+        matrix_transform = glm.rotate(matrix_transform, r_y, glm.vec3(0, 1, 0))
+        matrix_transform = glm.rotate(matrix_transform, r_z, glm.vec3(0, 0, 1))
 
         # aplicando escala
         matrix_transform = glm.scale(matrix_transform, glm.vec3(s_x, s_y, s_z))

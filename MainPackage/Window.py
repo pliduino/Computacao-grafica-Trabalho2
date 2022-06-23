@@ -82,20 +82,20 @@ class WindowManager:
 
     # Input Events
     def _key_event(self, window, key, scancode, action, mods):
-        front = self.camera.getFront()
+        front = self.camera.get_front()
 
         #Movement Inputs (WASD)
-        if key == glfw.KEY_W and (action == glfw.GLFW_PRESS or action == glfw.GLFW_REPEAT):
-            cameraPos += front * self.cameraSpeed 
+        if key == glfw.KEY_W and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.camera.pos += front * self.cameraSpeed 
 
-        if key == glfw.KEY_S and (action == glfw.GLFW_PRESS or action == glfw.GLFW_REPEAT):
-            cameraPos -= front * self.cameraSpeed 
+        if key == glfw.KEY_S and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.camera.pos -= front * self.cameraSpeed 
 
-        if key == glfw.KEY_A and (action == glfw.GLFW_PRESS or action == glfw.GLFW_REPEAT):
-            cameraPos -= self.camera.get_side() * self.cameraSpeed
+        if key == glfw.KEY_A and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.camera.pos -= self.camera.get_side() * self.cameraSpeed
 
-        if key == glfw.KEY_D and (action == glfw.GLFW_PRESS or action == glfw.GLFW_REPEAT):
-            cameraPos += self.camera.get_side() * self.cameraSpeed
+        if key == glfw.KEY_D and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.camera.pos += self.camera.get_side() * self.cameraSpeed
 
 
         if key == glfw.KEY_P and action == 1:
@@ -103,12 +103,12 @@ class WindowManager:
 
         # Enable/Disable Cursor
         if key==glfw.KEY_SPACE and action == 1:
-            if mouse_state == glfw.CURSOR_DISABLED:
-                mouse_state = glfw.CURSOR_NORMAL
+            if self._mouse_state == glfw.CURSOR_DISABLED:
+                self._mouse_state = glfw.CURSOR_NORMAL
             else:
-                mouse_state = glfw.CURSOR_DISABLED
+                self._mouse_state = glfw.CURSOR_DISABLED
             glfw.set_cursor_pos(self.window, self._width, self._height)
-            glfw.set_input_mode(window, glfw.CURSOR, mouse_state)
+            glfw.set_input_mode(window, glfw.CURSOR, self._mouse_state)
 
 
     def _mouse_event(self, window, xpos, ypos):
