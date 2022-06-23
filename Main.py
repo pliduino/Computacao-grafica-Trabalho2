@@ -1,7 +1,10 @@
 from MainPackage import *
 import glfw
+import OpenGL
 
 windowManager = Window.WindowManager(1280, 720, "Main")
+print(OpenGL.__version__)
+shader = Shader.Shader(3)
 
 windowManager.show()
 
@@ -11,7 +14,7 @@ while windowManager.loop:
     # Drawing Objects
     
 
-    windowManager.update()
+    windowManager.update(shader.get_program())
     
 
 Window.WindowManager.terminate()
