@@ -9,7 +9,7 @@ class Object:
         string_ += "\nScale: " + self._scale.__str__()
         return string_
 
-    def __init__(self, px=0, py=0, pz=0, rx=0, ry=0, rz=0, sx=1, sy=1, sz=1):
+    def __init__(self, px=0.0, py=0.0, pz=0.0, rx=0.0, ry=0.0, rz=0.0, sx=1.0, sy=1.0, sz=1.0):
         self._position = {'x': px, 'y': py,'z': pz}
         self._rotation = {'x': rx, 'y': ry,'z': rz}
         self._scale = {'x': sx, 'y': sy,'z': sz}
@@ -128,4 +128,7 @@ class MeshObject(Object):
         self.texture_id = texture_id
 
 class LightObject(Object):
-    pass
+
+    def __init__(self, color = (1.0, 1.0, 1.0)):
+        super().__init__()
+        self.color = color
