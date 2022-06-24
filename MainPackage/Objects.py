@@ -64,6 +64,11 @@ class MeshObject(Object):
         # Used for rendering at Shader
         self.vertices_index = 0
         self.n_vertices = 0
+
+        self.ns = 16 # Specular Exponent
+        self.ka = 0.5 # Ambient Reflection
+        self.kd = 0.5 # Diffuse
+        self.ks = 0.5 # Specular
     
     #Loads a Wavefront OBJ file.
     def load_mesh_file(self, filename):
@@ -121,3 +126,6 @@ class MeshObject(Object):
 
     def set_texture(self, texture_id):
         self.texture_id = texture_id
+
+class LightObject(Object):
+    pass

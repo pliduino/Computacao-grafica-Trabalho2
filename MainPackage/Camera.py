@@ -8,8 +8,8 @@ class Camera():
         self.up    = glm.vec3(0.0,  1.0,  0.0);
 
     def get_front(self):
-        front = glm.vec3(self.front.x, 0.0, self.front.z)
-        front = glm.normalize(front)
+        front = glm.vec3(self.front.x, self.front.y, self.front.z)
+        #front = glm.normalize(front)
         return front
 
     def get_side(self):

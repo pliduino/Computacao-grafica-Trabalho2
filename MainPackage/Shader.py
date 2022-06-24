@@ -6,6 +6,7 @@ import glm
 import math
 
 class Shader:
+    ang = 0
     def __init__(self, n_textures=1):
         # Used to set unique IDs to each texture
         self._current_texture_id = 0
@@ -30,18 +31,26 @@ class Shader:
         void main(){
             gl_Position = projection * view * model * vec4(position,1.0);
             out_texture = vec2(texture_coord);
-            out_fragPos = vec3(position);
-            out_normal = normals;
+            out_fragPos = vec3(model * vec4(position, 1.0));
+            out_normal = normals;    
         }
         """
 
         fragment_code = """
 
-        uniform vec3 lightPos; // define coordenadas de posicao da luz
+        vec3 lightColor = vec3(1.0, 1.0, 1.0);
+
+        vec3 lightColor1 = vec3(1.0, 1.0, 1.0);
+        uniform vec3 lightPos1;
+        vec3 lightColor2 = vec3(1.0, 1.0, 1.0);
+        uniform vec3 lightPos2;
+
         uniform float ka; // coeficiente de reflexao ambiente
         uniform float kd; // coeficiente de reflexao difusa
         
-        vec3 lightColor = vec3(1.0, 1.0, 1.0);
+        uniform vec3 viewPos; // define coordenadas com a posicao da camera/observador
+        uniform float ks; // coeficiente de reflexao especular
+        uniform float ns; // expoente de reflexao especular
 
         varying vec2 out_texture; // recebido do vertex shader
         varying vec3 out_normal; // recebido do vertex shader
@@ -53,19 +62,39 @@ class Shader:
         void main(){
             vec3 ambient = ka * lightColor;             
         
-            vec3 norm = normalize(out_normal); // normaliza vetores perpendiculares
-            vec3 lightDir = normalize(lightPos - out_fragPos); // direcao da luz
-            float diff = max(dot(norm, lightDir), 0.0); // verifica limite angular (entre 0 e 90)
-            vec3 diffuse = kd * diff * lightColor; // iluminacao difusa
+            // calculando reflexao difusa
+            vec3 norm1 = normalize(out_normal); // normaliza vetores perpendiculares
+            vec3 lightDir1 = normalize(lightPos1 - out_fragPos); // direcao da luz
+            float diff1 = max(dot(norm1, lightDir1), 0.0); // verifica limite angular (entre 0 e 90)
+            vec3 diffuse1 = kd * diff1 * lightColor1; // iluminacao difusa
             
+            // calculando reflexao especular
+            vec3 viewDir1 = normalize(viewPos - out_fragPos); // direcao do observador/camera
+            vec3 reflectDir1 = reflect(-lightDir1, norm1); // direcao da reflexao
+            float spec1 = pow(max(dot(viewDir1, reflectDir1), 0.0), ns);
+            vec3 specular1 = ks * spec1 * lightColor1;   
+
+            // calculando reflexao difusa
+            vec3 norm2 = normalize(out_normal); // normaliza vetores perpendiculares
+            vec3 lightDir2 = normalize(lightPos2 - out_fragPos); // direcao da luz
+            float diff2 = max(dot(norm2, lightDir2), 0.0); // verifica limite angular (entre 0 e 90)
+            vec3 diffuse2 = kd * diff2 * lightColor2; // iluminacao difusa
+            
+            // calculando reflexao especular
+            vec3 viewDir2 = normalize(viewPos - out_fragPos); // direcao do observador/camera
+            vec3 reflectDir2 = reflect(-lightDir2, norm2); // direcao da reflexao
+            float spec2 = pow(max(dot(viewDir2, reflectDir2), 0.0), ns);
+            vec3 specular2 = ks * spec2 * lightColor2;                
+            
+            // aplicando o modelo de iluminacao
             vec4 texture = texture2D(samplerTexture, out_texture);
-            vec4 result = vec4((ambient + diffuse),1.0) * texture; // aplica iluminacao
+            vec4 result = vec4((ambient + diffuse1 + diffuse2 + specular1 + specular2),1.0) * texture; // aplica iluminacao
             gl_FragColor = result;
 
         }
         """
 
-        # Requesting a program and shader slots from GPU
+        # Requesting a self._program and shader slots from GPU
         self._program  = glCreateProgram()
         self._vertex   = glCreateShader(GL_VERTEX_SHADER)
         self._fragment = glCreateShader(GL_FRAGMENT_SHADER)
@@ -95,27 +124,27 @@ class Shader:
         glAttachShader(self._program, self._fragment)
 
 
-        # Build program
+        # Build self._program
         glLinkProgram(self._program)
         if not glGetProgramiv(self._program, GL_LINK_STATUS):
             print(glGetProgramInfoLog(self._program))
             raise RuntimeError('Linking error')
             
 
-        # Make program the default program
+        # Make self._program the default self._program
         glUseProgram(self._program)
 
 
         glEnable(GL_DEPTH_TEST) ### importante para 3D
         # Textures
         glEnable(GL_TEXTURE_2D)
-        glEnable(GL_LIGHT0)
         self._n_textures = n_textures
         self.textures = glGenTextures(self._n_textures)
 
 
         # Request a buffer slot from GPU (Vertices, textures and normals)
         self._buffer = glGenBuffers(3)
+
         loc_light_pos = glGetUniformLocation(self._program, "lightPos") # recuperando localizacao da variavel lightPos na GPU
         glUniform3f(loc_light_pos, -1.5, 1.7, 2.5) ### posicao da fonte de luz
 
@@ -188,19 +217,19 @@ class Shader:
 
         loc_model = glGetUniformLocation(self._program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)
-        
-        #TODO Adcionar ka e kd na classe MeshObject
-        ka_inc = 0.3
-        kd_inc = 0.5
 
-        ka = ka_inc # coeficiente de reflexao ambiente do modelo
-        kd = kd_inc # coeficiente de reflexao difusa do modelo
 
         loc_ka = glGetUniformLocation(self._program, "ka") # recuperando localizacao da variavel ka na GPU
-        glUniform1f(loc_ka, ka) ### envia ka pra gpu
+        glUniform1f(loc_ka, mesh_object.ka) ### envia ka pra gpu
 
         loc_kd = glGetUniformLocation(self._program, "kd") # recuperando localizacao da variavel ka na GPU
-        glUniform1f(loc_kd, kd) ### envia kd pra gpu    
+        glUniform1f(loc_kd, mesh_object.kd) ### envia kd pra gpu    
+
+        loc_ks = glGetUniformLocation(self._program, "ks") # recuperando localizacao da variavel ks na GPU
+        glUniform1f(loc_ks, mesh_object.ks) ### envia ks pra gpu        
+
+        loc_ns = glGetUniformLocation(self._program, "ns") # recuperando localizacao da variavel ns na GPU
+        glUniform1f(loc_ns, mesh_object.ns) ### envia ns pra gpu      
 
 
 
@@ -219,8 +248,13 @@ class Shader:
                 self._textures_coord_list.append( mesh_object.mesh['texture'][texture_id-1] )
             for normal_id in face[2]:
                 self.normals_list.append(mesh_object.mesh['normals'][normal_id-1] )
-        #TODO Change n_vertices to be set in load_mesh_file()
+
         mesh_object.n_vertices = len(self._vertices_list) - mesh_object.vertices_index
+
+    def draw_light(self, temp, t_x, t_y, t_z):
+        loc_light_pos = glGetUniformLocation(self._program, temp) # recuperando localizacao da variavel lightPos na GPU
+        glUniform3f(loc_light_pos, t_x, t_y, t_z) ### posicao da fonte de luz
+
 
     def _model(r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     
