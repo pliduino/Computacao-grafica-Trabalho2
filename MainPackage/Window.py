@@ -59,10 +59,13 @@ class WindowManager:
 
         mat_projection = self._projection()
         loc_projection = glGetUniformLocation(program, "projection")
+        loc_view_pos = glGetUniformLocation(program, "viewPos")
         glUniformMatrix4fv(loc_projection, 1, GL_TRUE, mat_projection)    
 
+        glUniform3f(loc_view_pos, self.camera.pos[0], self.camera.pos[1], self.camera.pos[2])
 
         glfw.swap_buffers(self.window)
+
 
     def clear(self):
         glfw.poll_events() 

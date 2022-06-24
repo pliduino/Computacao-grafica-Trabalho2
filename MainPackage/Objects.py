@@ -9,7 +9,7 @@ class Object:
         string_ += "\nScale: " + self._scale.__str__()
         return string_
 
-    def __init__(self, px=0, py=0, pz=0, rx=0, ry=0, rz=0, sx=1, sy=1, sz=1):
+    def __init__(self, px=0.0, py=0.0, pz=0.0, rx=0.0, ry=0.0, rz=0.0, sx=1.0, sy=1.0, sz=1.0):
         self._position = {'x': px, 'y': py,'z': pz}
         self._rotation = {'x': rx, 'y': ry,'z': rz}
         self._scale = {'x': sx, 'y': sy,'z': sz}
@@ -64,10 +64,16 @@ class MeshObject(Object):
         # Used for rendering at Shader
         self.vertices_index = 0
         self.n_vertices = 0
+
+        self.ns = 16 # Specular Exponent
+        self.ka = 0.5 # Ambient Reflection
+        self.kd = 0.5 # Diffuse
+        self.ks = 0.5 # Specular
     
     #Loads a Wavefront OBJ file.
     def load_mesh_file(self, filename):
         vertices = []
+        normals = []
         texture_coords = []
         faces = []
 
@@ -85,6 +91,9 @@ class MeshObject(Object):
             if values[0] == 'v':
                 vertices.append(values[1:4])
 
+            
+            if values[0] == 'vn':
+                normals.append(values[1:4])
 
             ### recuperando coordenadas de textura
             elif values[0] == 'vt':
@@ -97,20 +106,29 @@ class MeshObject(Object):
             elif values[0] == 'f':
                 face = []
                 face_texture = []
+                face_normals = []
                 for v in values[1:]:
                     w = v.split('/')
                     face.append(int(w[0]))
+                    face_normals.append(int(w[2]))
                     if len(w) >= 2 and len(w[1]) > 0:
                         face_texture.append(int(w[1]))
                     else:
                         face_texture.append(0)
 
-                faces.append((face, face_texture, material))
+                faces.append((face, face_texture, face_normals, material))
 
         self.mesh = {}
         self.mesh['vertices'] = vertices
         self.mesh['texture'] = texture_coords
         self.mesh['faces'] = faces
+        self.mesh['normals'] = normals
 
     def set_texture(self, texture_id):
         self.texture_id = texture_id
+
+class LightObject(Object):
+
+    def __init__(self, color = (1.0, 1.0, 1.0)):
+        super().__init__()
+        self.color = color

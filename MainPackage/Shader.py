@@ -1,3 +1,5 @@
+from ast import Index
+from tempfile import tempdir
 from OpenGL.GL import *
 from PIL import Image
 import Objects
@@ -6,41 +8,19 @@ import glm
 import math
 
 class Shader:
-
     def __init__(self, n_textures=1):
         # Used to set unique IDs to each texture
         self._current_texture_id = 0
 
         self._vertices_list = []    
         self._textures_coord_list = []
+        self.normals_list = []
         
-        vertex_code = """
-        attribute vec3 position;
-        attribute vec2 texture_coord;
-        varying vec2 out_texture;
-                
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;        
-        
-        void main(){
-            gl_Position = projection * view * model * vec4(position,1.0);
-            out_texture = vec2(texture_coord);
-        }
-        """
+        vertex_code = open("Shaders/vertex_shader.vert").read()
 
-        fragment_code = """
-        uniform vec4 color;
-        varying vec2 out_texture;
-        uniform sampler2D samplerTexture;
-        
-        void main(){
-            vec4 texture = texture2D(samplerTexture, out_texture);
-            gl_FragColor = texture;
-        }
-        """
+        fragment_code = open("Shaders/fragment_shader.frag").read()
 
-        # Requesting a program and shader slots from GPU
+        # Requesting a self._program and shader slots from GPU
         self._program  = glCreateProgram()
         self._vertex   = glCreateShader(GL_VERTEX_SHADER)
         self._fragment = glCreateShader(GL_FRAGMENT_SHADER)
@@ -70,14 +50,14 @@ class Shader:
         glAttachShader(self._program, self._fragment)
 
 
-        # Build program
+        # Build self._program
         glLinkProgram(self._program)
         if not glGetProgramiv(self._program, GL_LINK_STATUS):
             print(glGetProgramInfoLog(self._program))
             raise RuntimeError('Linking error')
             
 
-        # Make program the default program
+        # Make self._program the default self._program
         glUseProgram(self._program)
 
 
@@ -88,8 +68,11 @@ class Shader:
         self.textures = glGenTextures(self._n_textures)
 
 
-        # Request a buffer slot from GPU (Vertices and textures)
-        self._buffer = glGenBuffers(2)
+        # Request a buffer slot from GPU (Vertices, textures and normals)
+        self._buffer = glGenBuffers(3)
+
+        loc_light_pos = glGetUniformLocation(self._program, "lightPos") # recuperando localizacao da variavel lightPos na GPU
+        glUniform3f(loc_light_pos, -1.5, 1.7, 2.5) ### posicao da fonte de luz
 
     def get_program(self):
         return self._program
@@ -107,7 +90,7 @@ class Shader:
         image_data = img.tobytes("raw", "RGB", 0, -1)
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data)
-
+        glMaterial
         self._current_texture_id += 1
         return self._current_texture_id - 1
     
@@ -137,6 +120,18 @@ class Shader:
         glEnableVertexAttribArray(loc_texture_coord)
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
+        # Uploading Normals
+        normals = np.zeros(len(self.normals_list), [("position", np.float32, 3)]) # três coordenadas
+        normals['position'] = self.normals_list
+
+        glBindBuffer(GL_ARRAY_BUFFER, self._buffer[2])
+        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
+        stride = normals.strides[0]
+        offset = ctypes.c_void_p(0)
+        loc_normals_coord = glGetAttribLocation(self._program, "normals")
+        glEnableVertexAttribArray(loc_normals_coord)
+        glVertexAttribPointer(loc_normals_coord, 3, GL_FLOAT, False, stride, offset)
+
     def draw_object(self, mesh_object: Objects.MeshObject):
         position = mesh_object.get_position()
         rotation = mesh_object.get_rotation()
@@ -148,6 +143,23 @@ class Shader:
 
         loc_model = glGetUniformLocation(self._program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)
+
+
+        loc_ka = glGetUniformLocation(self._program, "ka") # recuperando localizacao da variavel ka na GPU
+        glUniform1f(loc_ka, mesh_object.ka) ### envia ka pra gpu
+
+        loc_kd = glGetUniformLocation(self._program, "kd") # recuperando localizacao da variavel ka na GPU
+        glUniform1f(loc_kd, mesh_object.kd) ### envia kd pra gpu    
+
+        loc_ks = glGetUniformLocation(self._program, "ks") # recuperando localizacao da variavel ks na GPU
+        glUniform1f(loc_ks, mesh_object.ks) ### envia ks pra gpu        
+
+        loc_ns = glGetUniformLocation(self._program, "ns") # recuperando localizacao da variavel ns na GPU
+        glUniform1f(loc_ns, mesh_object.ns) ### envia ns pra gpu      
+
+
+
+
         glBindTexture(GL_TEXTURE_2D, mesh_object.texture_id)
         glDrawArrays(GL_TRIANGLES, mesh_object.vertices_index, mesh_object.n_vertices)
 
@@ -160,9 +172,18 @@ class Shader:
                 self._vertices_list.append( mesh_object.mesh['vertices'][vertice_id-1] )
             for texture_id in face[1]:
                 self._textures_coord_list.append( mesh_object.mesh['texture'][texture_id-1] )
+            for normal_id in face[2]:
+                self.normals_list.append(mesh_object.mesh['normals'][normal_id-1] )
 
-        #TODO Change n_vertices to be set in load_mesh_file()
         mesh_object.n_vertices = len(self._vertices_list) - mesh_object.vertices_index
+
+    def draw_light(self, light_object: Objects.LightObject, slot):
+        loc_light_pos = glGetUniformLocation(self._program, f"lightPos[{slot}]") # recuperando localizacao da variavel lightPos na GPU
+        loc_light_color = glGetUniformLocation(self._program, f"lightColor[{slot}]")
+
+        glUniform3f(loc_light_pos, light_object._position['x'], light_object._position['y'], light_object._position['z'])
+        glUniform3f(loc_light_color, light_object.color[0], light_object.color[1], light_object.color[2])
+
 
     def _model(r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     
