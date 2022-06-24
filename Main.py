@@ -34,6 +34,8 @@ shader.upload_binded_meshes()
 while windowManager.loop():
     windowManager.clear()
     
+    
+
     heli_helice.rotate(0, 20, 0)
     heli_helice2.rotate(20, 0, 0)
 

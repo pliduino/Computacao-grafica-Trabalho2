@@ -68,6 +68,7 @@ class MeshObject(Object):
     #Loads a Wavefront OBJ file.
     def load_mesh_file(self, filename):
         vertices = []
+        normals = []
         texture_coords = []
         faces = []
 
@@ -85,6 +86,9 @@ class MeshObject(Object):
             if values[0] == 'v':
                 vertices.append(values[1:4])
 
+            
+            if values[0] == 'vn':
+                normals.append(values[1:4])
 
             ### recuperando coordenadas de textura
             elif values[0] == 'vt':
@@ -97,20 +101,23 @@ class MeshObject(Object):
             elif values[0] == 'f':
                 face = []
                 face_texture = []
+                face_normals = []
                 for v in values[1:]:
                     w = v.split('/')
                     face.append(int(w[0]))
+                    face_normals.append(int(w[2]))
                     if len(w) >= 2 and len(w[1]) > 0:
                         face_texture.append(int(w[1]))
                     else:
                         face_texture.append(0)
 
-                faces.append((face, face_texture, material))
+                faces.append((face, face_texture, face_normals, material))
 
         self.mesh = {}
         self.mesh['vertices'] = vertices
         self.mesh['texture'] = texture_coords
         self.mesh['faces'] = faces
+        self.mesh['normals'] = normals
 
     def set_texture(self, texture_id):
         self.texture_id = texture_id
