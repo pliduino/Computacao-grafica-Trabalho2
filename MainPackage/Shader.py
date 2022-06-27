@@ -1,5 +1,3 @@
-from ast import Index
-from tempfile import tempdir
 from OpenGL.GL import *
 from PIL import Image
 import Objects

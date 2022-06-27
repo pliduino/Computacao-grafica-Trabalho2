@@ -1,5 +1,6 @@
-#include "Object.h"
+#include "Object.hpp"
 
-Object::Object(){
+Object::Object()
+{
     transform = Transform();
 }

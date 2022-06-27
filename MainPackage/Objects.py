@@ -1,6 +1,3 @@
-import string
-import glfw
-
 class Object:
 
     def __str__(self):
