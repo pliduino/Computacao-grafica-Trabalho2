@@ -3,7 +3,7 @@ import glm
 
 class Camera():
     def __init__(self):
-        self.pos = glm.vec3(0.0, 4.0, 1.0);
+        self.pos = glm.vec3(0.0, -3.2, 5.0);
         self.front = glm.vec3(0.0, 0.0, -1.0);
         self.up = glm.vec3(0.0, 1.0, 0.0);
 

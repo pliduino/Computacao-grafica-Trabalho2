@@ -85,7 +85,8 @@ class WindowManager:
     # Input Events
     def _key_event(self, window, key, scancode, action, mods):
         front = self.camera.get_front()
-
+        oldPos=glm.vec3(self.camera.pos.x,self.camera.pos.y,self.camera.pos.z)
+        front.y=0
         #Close Window
         if key == glfw.KEY_ESCAPE and (action == glfw.PRESS):
             glfw.set_window_should_close(window, True)
@@ -106,6 +107,10 @@ class WindowManager:
         if key == glfw.KEY_P and action == 1:
             self._polygonal_mode = not self._polygonal_mode
 
+        dist=glm.distance(self.camera.pos,glm.vec3(0,0,0))
+        if dist>=29:
+            self.camera.pos=oldPos
+
         # Enable/Disable Cursor
         if key == glfw.KEY_SPACE and action == 1:
             if self._mouse_state == glfw.CURSOR_DISABLED:
@@ -114,6 +119,7 @@ class WindowManager:
                 self._mouse_state = glfw.CURSOR_DISABLED
             glfw.set_cursor_pos(self.window, self._width, self._height)
             glfw.set_input_mode(window, glfw.CURSOR, self._mouse_state)
+
 
     def _mouse_event(self, window, xpos, ypos):
         if self._firstMouse:
