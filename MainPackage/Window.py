@@ -86,6 +86,10 @@ class WindowManager:
     def _key_event(self, window, key, scancode, action, mods):
         front = self.camera.get_front()
 
+        #Close Window
+        if key == glfw.KEY_ESCAPE and (action == glfw.PRESS):
+            glfw.set_window_should_close(window, True)
+            
         # Movement Inputs (WASD)
         if key == glfw.KEY_W and (action == glfw.PRESS or action == glfw.REPEAT):
             self.camera.pos += front * self.cameraSpeed

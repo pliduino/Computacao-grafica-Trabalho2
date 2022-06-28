@@ -25,12 +25,35 @@ cat.set_rotation(0, 20, 0)
 cat.set_position(-10, -5, 0)
 shader.bind_mesh(cat)
 
+lara = Objects.MeshObject()
+lara.load_mesh_file("Meshes/lara.obj")
+lara.set_texture(shader.load_texture("Textures/Body.png"))
+lara.set_position(5, -4.9, -15)
+lara.set_scale(1.4,1.4,1.4)
+shader.bind_mesh(lara)
+
 barril = Objects.MeshObject()
 barril.load_mesh_file("Meshes/barril.obj")
 barril.set_texture(shader.load_texture("Textures/barril/Wood/Wood Diffuse.jpg"))
 barril.set_position(-8, -5, 4)
 barril.set_scale(0.8,0.8,0.8)
 shader.bind_mesh(barril)
+
+barril2 = Objects.MeshObject()
+barril2.load_mesh_file("Meshes/barril2.obj")
+barril2.set_texture(shader.load_texture("Textures/barril/Metal/Metal Normal.jpg"))
+barril2.set_position(10, -3.6, -18)
+barril2.set_scale(0.07,0.07,0.07)
+barril2.set_rotation(90, 0, 0)
+shader.bind_mesh(barril2)
+
+
+sofa = Objects.MeshObject()
+sofa.load_mesh_file("Meshes/sofas.obj")
+
+sofa.set_position(1, -5, -15)
+
+shader.bind_mesh(sofa)
 
 house = Objects.MeshObject()
 house.load_mesh_file("Meshes/house.obj")
@@ -77,7 +100,7 @@ base.load_mesh_file("Meshes/SM_Terreno.obj")
 base.set_texture(shader.load_texture("Textures/T_Pedra.jpg"))
 base.set_position(0, -5, 0)
 base.set_rotation(0, 0, 1)
-base.set_scale(20, 20, 20)
+base.set_scale(20, 20, 25)
 shader.bind_mesh(base)
 
 light_1 = Objects.LightObject()
@@ -97,6 +120,9 @@ while windowManager.loop():
     shader.draw_object(base)
     shader.draw_object(cat)
     shader.draw_object(barril)
+    shader.draw_object(barril2)
+    shader.draw_object(lara)
+    shader.draw_object(sofa)
     for t in trees:
         shader.draw_object(t)
     shader.draw_object(house)
@@ -106,4 +132,4 @@ while windowManager.loop():
 
     windowManager.update(shader.get_program())
 
-Window.WindowManager.terminate()
+Window.WindowManager.terminate(Window)
