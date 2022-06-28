@@ -14,8 +14,8 @@ windowManager = Window.WindowManager(1280, 720, "Main")
 windowManager.show()
 
 shader = Shader.Shader(3)
-light =Objects.LightObject(color=(1,0,0))
-light.set_position(0,10,0)
+light =Objects.LightObject(color=(1,1,1))
+light.set_position(0,12,0)
 
 cat = Objects.MeshObject()
 cat.load_mesh_file("Meshes/cat1.obj")
@@ -24,6 +24,13 @@ cat.set_scale(0.3, 0.3, 0.3)
 cat.set_rotation(0, 20, 0)
 cat.set_position(-10, -5, 0)
 shader.bind_mesh(cat)
+
+sky = Objects.MeshObject()
+sky.load_mesh_file("Meshes/sky.obj")
+sky.set_texture(shader.load_texture("Textures/sky11.png"))
+sky.set_scale(30, 30, 30)
+sky.set_position(0, -5.1, 0)
+shader.bind_mesh(sky)
 
 lara = Objects.MeshObject()
 lara.load_mesh_file("Meshes/lara.obj")
@@ -50,6 +57,7 @@ shader.bind_mesh(barril2)
 
 sofa = Objects.MeshObject()
 sofa.load_mesh_file("Meshes/sofas.obj")
+sofa.set_texture(shader.load_texture("Textures/cor2.jpg"))
 
 sofa.set_position(1, -5, -15)
 
@@ -57,7 +65,7 @@ shader.bind_mesh(sofa)
 
 house = Objects.MeshObject()
 house.load_mesh_file("Meshes/house.obj")
-house.set_texture(shader.load_texture("Textures/teste.jpg"))
+house.set_texture(shader.load_texture("Textures/cor1.jpg"))
 house.set_position(0, -5, -10)
 shader.bind_mesh(house)
 
@@ -100,13 +108,14 @@ base.load_mesh_file("Meshes/SM_Terreno.obj")
 base.set_texture(shader.load_texture("Textures/T_Pedra.jpg"))
 base.set_position(0, -5, 0)
 base.set_rotation(0, 0, 1)
-base.set_scale(20, 20, 25)
+base.set_scale(35, 20, 35)
 shader.bind_mesh(base)
 
 light_1 = Objects.LightObject()
 
 shader.upload_binded_meshes()
 heliceSpeed = 10
+ang=0
 while windowManager.loop():
     windowManager.clear()
 
@@ -114,6 +123,7 @@ while windowManager.loop():
     heli_helice2.rotate(heliceSpeed, 0, 0)
 
     # Drawing Objects
+    shader.draw_object(sky)
     shader.draw_object(heli_base)
     shader.draw_object(heli_helice)
     shader.draw_object(heli_helice2)
@@ -127,8 +137,10 @@ while windowManager.loop():
         shader.draw_object(t)
     shader.draw_object(house)
     shader.draw_light(light,0)
+
+    light.set_position(math.sin(ang)*28, 10, math.cos(ang)*28)
+    ang+=0.005
     # Drawing Lights (Max of 5 slots, hard coded into fragment shader)
-    #shader.draw_light(light_1, 0)
 
     windowManager.update(shader.get_program())
 
