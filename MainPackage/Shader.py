@@ -2,7 +2,7 @@ from ast import Index
 from tempfile import tempdir
 from OpenGL.GL import *
 from PIL import Image
-import Objects
+import MainPackage.Objects as Objects
 import numpy as np
 import glm
 import math
