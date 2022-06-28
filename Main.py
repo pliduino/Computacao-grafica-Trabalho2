@@ -14,6 +14,8 @@ windowManager = Window.WindowManager(1280, 720, "Main")
 windowManager.show()
 
 shader = Shader.Shader(3)
+light =Objects.LightObject(color=(1,0,0))
+light.set_position(0,10,0)
 
 cat = Objects.MeshObject()
 cat.load_mesh_file("Meshes/cat1.obj")
@@ -98,8 +100,9 @@ while windowManager.loop():
     for t in trees:
         shader.draw_object(t)
     shader.draw_object(house)
+    shader.draw_light(light,0)
     # Drawing Lights (Max of 5 slots, hard coded into fragment shader)
-    shader.draw_light(light_1, 0)
+    #shader.draw_light(light_1, 0)
 
     windowManager.update(shader.get_program())
 
