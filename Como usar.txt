@@ -1,0 +1,6 @@
+WASD - Movimenta camera no eixo X e Z 
+(camera não move em Y)
+Mouse - Gira camera
+
+IJ - Muda Field of View
+Espaço - Trava mouse/ Destrava mouse do centro da tela

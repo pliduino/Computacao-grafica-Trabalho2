@@ -23,6 +23,8 @@ class WindowManager:
         self._pitch = 0.0
         self._lastX = self._width / 2
         self._lastY = self._height / 2
+        # Projection settings
+        self.fieldOfViewAng = 75.0
 
         if not WindowManager.has_glfw_init:
             glfw.init()
@@ -78,7 +80,10 @@ class WindowManager:
 
     def _projection(self):
         # perspective parameters: fovy, aspect, near, far
-        mat_projection = glm.perspective(glm.radians(75.0), self._width / self._height, 0.1, 1000.0)
+        mat_projection = glm.perspective(glm.radians(self.fieldOfViewAng),
+                                         self._width / self._height,
+                                         0.1,
+                                         1000.0)
         mat_projection = np.array(mat_projection)
         return mat_projection
 
@@ -103,6 +108,11 @@ class WindowManager:
 
         if key == glfw.KEY_D and (action == glfw.PRESS or action == glfw.REPEAT):
             self.camera.pos += self.camera.get_side() * self.cameraSpeed
+
+        if key == glfw.KEY_J and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.fieldOfViewAng += 1
+        if key == glfw.KEY_I and (action == glfw.PRESS or action == glfw.REPEAT):
+            self.fieldOfViewAng -= 1
 
         if key == glfw.KEY_P and action == 1:
             self._polygonal_mode = not self._polygonal_mode
